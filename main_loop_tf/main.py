@@ -948,7 +948,7 @@ class Experiment(object):
                          initial=self.global_step_val % self.train.nbatches,
                          dynamic_ncols=True,
                          bar_format=bar_format,
-                         postfix=dict(step=0, epoch=0, D=0, loss=0))
+                         postfix=dict([(0, 0)], step=0, epoch=0, D=0, loss=0))
 
     def batch_begin(self):
         iter_start = time()
