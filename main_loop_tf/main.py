@@ -3,7 +3,7 @@ import abc
 import hashlib
 try:
     from itertools import izip_longest as zip_longest
-except:
+except ImportError:
     from itertools import zip_longest
 import json
 import logging
