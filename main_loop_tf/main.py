@@ -940,12 +940,15 @@ class Experiment(object):
                                        simple_value=self.epoch_id + 1)
         summary = tf.Summary(value=[summary_val])
         self.summary_writer.add_summary(summary, self.epoch_id)
-        bar_format = '{n_fmt}/{total_fmt}{desc}{percentage:3.0f}%|{bar}| '
-        bar_format += '[{elapsed}<{remaining},{rate_fmt}{postfix}]'
+        bar_format = (
+            '{n_fmt}/{total_fmt}({postfix[step]:3d}) Ep {postfix[epoch]:d}:'
+            ' {percentage:3.0f}%|{bar}| [{elapsed}<{remaining},{rate_fmt},'
+            ' D={postfix[D]:.2f}s, loss={postfix[loss]:.3f}]')
         self.pbar = tqdm(total=self.train.nbatches,
                          initial=self.global_step_val % self.train.nbatches,
                          dynamic_ncols=True,
-                         bar_format=bar_format)
+                         bar_format=bar_format,
+                         postfix=dict(step=0, epoch=0, D=0, loss=0))
 
     def batch_begin(self):
         iter_start = time()
@@ -1026,11 +1029,11 @@ class Experiment(object):
         self.loss_value = fetch_dict['avg_loss']
 
     def batch_end(self):
-        self.pbar.set_description('({:3d}) Ep {:d}'.format(
-            self.global_step_val + 1, self.epoch_id + 1))
-        avg_loss = self._fetch_dict['avg_loss']
-        self.pbar.set_postfix({'D': '{:.2f}s'.format(self._t_data_load),
-                               'loss': '{:.3f}'.format(avg_loss)})
+        self.pbar.postfix.update(
+            step=self.global_step_val + 1,
+            epoch=self.epoch_id + 1,
+            D=self._t_data_load,
+            loss=self._fetch_dict['avg_loss'])
         self.pbar.update(1)
         self.global_step_val += 1
 
